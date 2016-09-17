@@ -3,5 +3,8 @@
   "dependencies": {},
   "globalDependencies": {
     "fbemitter": "registry:dt/fbemitter#2.0.0+20160618175531"
+  },
+  "globalDevDependencies": {
+    "jasmine": "registry:dt/jasmine#2.2.0+20160621224255"
   }
 }
