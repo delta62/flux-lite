@@ -1,0 +1,29 @@
+{
+  "name": "ts-flux",
+  "version": "0.0.1",
+  "description": "A very simple basis for the flux pattern in TypeScript",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/delta62/ts-flux.git"
+  },
+  "author": "Sam Noedel <sam.noedel@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/delta62/ts-flux/issues"
+  },
+  "homepage": "https://github.com/delta62/ts-flux#readme",
+  "devDependencies": {
+    "typescript": "^1.8.10",
+    "typings": "^1.3.3"
+  },
+  "dependencies": {
+    "fbemitter": "^2.1.1"
+  }
+}
