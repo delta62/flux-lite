@@ -1,0 +1,7 @@
+{
+  "name": "ts-flux",
+  "dependencies": {},
+  "globalDependencies": {
+    "fbemitter": "registry:dt/fbemitter#2.0.0+20160618175531"
+  }
+}
