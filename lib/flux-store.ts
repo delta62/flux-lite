@@ -1,19 +1,17 @@
 import { Dispatcher, DispatchToken } from './dispatcher';
 import { EventEmitter } from 'fbemitter';
 
-export class FluxStore {
+export abstract class FluxStore {
 
   private _dispatchToken: DispatchToken;
 
   protected _changed: boolean;
   protected _changeEvent: string;
-  protected _className: string;
   protected _emitter: EventEmitter;
 
   constructor(protected _dispatcher: Dispatcher<any>) {
     this._changed = false;
     this._changeEvent = 'change';
-    this._className = this.constructor['name'];
     this._emitter = new EventEmitter();
 
     this._dispatchToken = this._dispatcher.register(payload => {
@@ -39,7 +37,7 @@ export class FluxStore {
 
   protected _emitChange(): void {
     if (!this._dispatcher.isDispatching()) {
-      throw new StoreError(`${this._className}.hasChanged(): Must be invoked while dispatching.`);
+      throw new StoreError(`FlexStore.hasChanged(): Must be invoked while dispatching.`);
     }
     this._changed = true;
   }
@@ -52,9 +50,7 @@ export class FluxStore {
     }
   }
 
-  private _onDispatch(payload: any): void {
-    throw new StoreError(`${this._className} has not overridden FluxStore.__onDispatch(), which is required`);
-  }
+  protected abstract _onDispatch(payload: any): void;
 }
 
 export class StoreError extends Error { }

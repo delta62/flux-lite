@@ -39,4 +39,6 @@ export abstract class FluxReduceStore<TState> extends FluxStore {
       this._emitter.emit(this._changeEvent);
     }
   }
+
+  protected _onDispatch(payload: any): void { }
 }
