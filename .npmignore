@@ -5,4 +5,4 @@
 /typings.json
 .travis.yml
 *.ts
-! *.d.ts
+!*.d.ts
