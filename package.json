@@ -1,6 +1,6 @@
 {
-  "name": "ts-flux",
-  "version": "0.0.1",
+  "name": "flux-lite",
+  "version": "0.0.2",
   "description": "A simplistic implementation of the flux pattern",
   "directories": {
     "lib": "lib",
@@ -13,14 +13,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/delta62/ts-flux.git"
+    "url": "git+https://github.com/delta62/flux-lite.git"
   },
   "author": "Sam Noedel <sam.noedel@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/delta62/ts-flux/issues"
+    "url": "https://github.com/delta62/flux-lite/issues"
   },
-  "homepage": "https://github.com/delta62/ts-flux#readme",
+  "homepage": "https://github.com/delta62/flux-lite#readme",
   "typings": "index.d.ts",
   "devDependencies": {
     "babel-core": "^6.14.0",
