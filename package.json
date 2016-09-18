@@ -8,8 +8,8 @@
   },
   "scripts": {
     "build": "typings install && tsc",
-    "test": "build && jasmine",
-    "prepublish": "build && node bundle.js"
+    "test": "npm run build && jasmine",
+    "prepublish": "npm run build && node bundle.js"
   },
   "repository": {
     "type": "git",
