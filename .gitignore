@@ -6,3 +6,4 @@
 *.d.ts
 *.swp
 *.js.map
+/index.js
