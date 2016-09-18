@@ -2,3 +2,5 @@
 /typings/
 *.swp
 /dist/
+/lib/*.js
+/spec/*.js

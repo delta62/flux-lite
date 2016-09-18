@@ -2,13 +2,13 @@
   "name": "ts-flux",
   "version": "0.0.1",
   "description": "A very simple basis for the flux pattern in TypeScript",
-  "main": "index.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
     "postinstall": "typings install",
-    "test": "tsc && jasmine"
+    "test": "tsc && jasmine",
+    "prepublish": "tsc && node build.js"
   },
   "repository": {
     "type": "git",
@@ -20,8 +20,11 @@
     "url": "https://github.com/delta62/ts-flux/issues"
   },
   "homepage": "https://github.com/delta62/ts-flux#readme",
+  "typings": "index.d.ts",
   "devDependencies": {
+    "babel-core": "^6.14.0",
     "jasmine": "^2.5.2",
+    "systemjs-builder": "^0.15.31",
     "typescript": "^1.8.10",
     "typings": "^1.3.3"
   },
