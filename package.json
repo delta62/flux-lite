@@ -1,9 +1,10 @@
 {
   "name": "ts-flux",
   "version": "0.0.1",
-  "description": "A very simple basis for the flux pattern in TypeScript",
+  "description": "A simplistic implementation of the flux pattern",
   "directories": {
-    "test": "test"
+    "lib": "lib",
+    "test": "spec"
   },
   "scripts": {
     "postinstall": "typings install",
