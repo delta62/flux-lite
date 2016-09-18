@@ -16,7 +16,7 @@ Dispatch a new action to all stores that have `register`ed. Every store will be 
 ``` js
 dispatcher.dispatch({
   type: 'cartItemAdded',
-  itemName: 'squidge'
+  itemName: 'boglin'
 });
 ```
 
@@ -60,12 +60,10 @@ class ShoppingCartStore extends FluxReduceStore {
   reduce(state, action) {
     switch (action.type) {
       case 'cartItemAdded':
-        return state.push({ name: action.itemName });
+        return state.slice().push({ name: action.itemName });
       case 'cartItemRemoved':
         let itemIndex = state.indexOf(action.item);
-        let newState = state.slice();
-        newState.splice(itemIndex, 1);
-        return newState;
+        return state.slice().splice(itemIndex, 1);
     }
   }
   
