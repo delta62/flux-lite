@@ -1,6 +1,8 @@
 /node_modules/
 /typings/
-*.swp
 /dist/
 /lib/*.js
 /spec/*.js
+*.d.ts
+*.swp
+*.js.map
