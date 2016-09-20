@@ -12,7 +12,6 @@ let builder = new Builder({
   },
   meta: {
     lib: {
-      format: 'amd',
       deps: [ 'eventemitter3' ]
     },
     eventemitter3: {
