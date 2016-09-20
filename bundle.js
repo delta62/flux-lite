@@ -12,6 +12,7 @@ let builder = new Builder({
   },
   meta: {
     lib: {
+      format: 'cjs',
       deps: [ 'eventemitter3' ]
     },
     eventemitter3: {

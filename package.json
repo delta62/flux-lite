@@ -1,15 +1,16 @@
 {
   "name": "flux-lite",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A simplistic implementation of the flux pattern",
   "directories": {
     "lib": "lib",
     "test": "spec"
   },
   "scripts": {
-    "build": "tsc",
     "test": "jasmine",
-    "prepublish": "typings install && npm run build && node bundle.js"
+    "typings": "typings install",
+    "tsc": "tsc",
+    "prepublish": "npm run typings && npm run tsc && node bundle.js"
   },
   "repository": {
     "type": "git",
