@@ -1,6 +1,6 @@
 {
   "name": "flux-lite",
-  "version": "0.1.5",
+  "version": "0.1.4",
   "description": "A simplistic implementation of the flux pattern",
   "directories": {
     "lib": "lib",
