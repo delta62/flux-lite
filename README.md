@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/delta62/flux-lite.svg?branch=master)](https://travis-ci.org/delta62/flux-lite)
+[![npm version](https://badge.fury.io/js/flux-lite.svg)](https://badge.fury.io/js/flux-lite)
 
 # flux-lite
 This is a simplistic implementation of the flux pattern based off of [Facebook's own implementation](https://github.com/facebook/flux). This project aims to provide a simple, lightweight, and unopinionated interface.
