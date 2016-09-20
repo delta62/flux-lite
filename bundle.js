@@ -7,36 +7,38 @@ let builder = new Builder({
     'npm:': 'node_modules/'
   },
   map: {
-    fbemitter: 'npm:fbemitter',
-    fbjs: 'npm:fbjs',
-    lib: 'lib'
+    lib: 'lib',
+    eventemitter3: 'npm:eventemitter3'
+  },
+  meta: {
+    lib: {
+      format: 'amd',
+      deps: [ 'eventemitter3' ]
+    },
+    eventemitter3: {
+      format: 'cjs'
+    }
   },
   packages: {
-    fbemitter: {
-      main: 'index.js',
-      defaultExtension: 'js'
-    },
-    fbjs: {
-      main: 'index.js',
-      defaultExtension: 'js'
-    },
     lib: {
+      defaultExtension: 'js'
+    },
+    eventemitter3: {
+      main: 'index.js',
       defaultExtension: 'js'
     }
   }
 });
 
 builder
-  .buildStatic('lib/*.js', 'dist/flux-lite.js', {
-    runtime: false,
+  .buildStatic('index.js', 'dist/flux-lite.umd.js', {
     globalName: 'fluxLite'
   })
   .then(() => console.log('Build complete'))
   .catch(err => console.error(err));
 
 builder
-  .buildStatic('lib/*.js', 'dist/flux-lite.min.js', {
-    runtime: false,
+  .buildStatic('index.js', 'dist/flux-lite.umd.min.js', {
     globalName: 'fluxLite',
     minify: true
   })

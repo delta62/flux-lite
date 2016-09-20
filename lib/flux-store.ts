@@ -1,5 +1,5 @@
 import { Dispatcher, DispatchToken } from './dispatcher';
-import { EventEmitter } from 'fbemitter';
+import EventEmitter = require('eventemitter3');
 
 export abstract class FluxStore {
 
@@ -7,7 +7,7 @@ export abstract class FluxStore {
 
   protected _changed: boolean;
   protected _changeEvent: string;
-  protected _emitter: EventEmitter;
+  protected _emitter: EventEmitter3.EventEmitter;
 
   constructor(protected _dispatcher: Dispatcher<any>) {
     this._changed = false;
@@ -20,7 +20,10 @@ export abstract class FluxStore {
   }
 
   addListener(callback: (eventType?: string) => void): {remove: () => void} {
-    return this._emitter.addListener(this._changeEvent, callback);
+    this._emitter.on(this._changeEvent, callback);
+    return {
+      remove: () => this._emitter.removeListener(this._changeEvent, callback)
+    }
   }
 
   getDispatcher(): Dispatcher<any> {
