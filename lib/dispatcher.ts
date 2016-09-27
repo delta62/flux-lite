@@ -1,3 +1,5 @@
+import ExtendableError from 'es6-error';
+
 export type DispatchToken = string;
 
 export class Dispatcher<TPayload> {
@@ -97,4 +99,8 @@ export class Dispatcher<TPayload> {
   }
 }
 
-export class DispatcherError extends Error { }
+export class DispatcherError extends ExtendableError {
+  constructor(message) {
+    super(message);
+  }
+}

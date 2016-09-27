@@ -1,5 +1,6 @@
 import { Dispatcher, DispatchToken } from './dispatcher';
-import EventEmitter = require('eventemitter3');
+import { EventEmitter }from 'eventemitter3';
+import ExtendableError from 'es6-error';
 
 export abstract class FluxStore {
 
@@ -7,7 +8,7 @@ export abstract class FluxStore {
 
   protected _changed: boolean;
   protected _changeEvent: string;
-  protected _emitter: EventEmitter3.EventEmitter;
+  protected _emitter: EventEmitter;
 
   constructor(protected _dispatcher: Dispatcher<any>) {
     this._changed = false;
@@ -56,4 +57,8 @@ export abstract class FluxStore {
   protected abstract _onDispatch(payload: any): void;
 }
 
-export class StoreError extends Error { }
+export class StoreError extends ExtendableError {
+  constructor(message) {
+    super(message);
+  }
+}

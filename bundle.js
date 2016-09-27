@@ -8,7 +8,7 @@ let builder = new Builder({
   },
   meta: {
     lib: {
-      format: 'cjs',
+      format: 'esm',
     }
   },
   packages: {
@@ -27,14 +27,6 @@ builder
     deps: [ 'eventemitter3' ]
   })
   .then(() => console.log('Build complete'))
-  .catch(err => console.error(err));
-
-builder
-  .buildStatic('index.js', 'dist/flux-lite.es2015.js', {
-    format: 'es6',
-    runtime: false
-  })
-  .then(() => console.log('ES6 build complete'))
   .catch(err => console.error(err));
 
 builder
