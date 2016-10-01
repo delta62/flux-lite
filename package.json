@@ -3,11 +3,15 @@
   "version": "0.3.0",
   "description": "A simplistic implementation of the flux pattern",
   "main": "dist/flux-lite.umd.js",
+  "jsnext:main": "index.js",
   "typings": "index.d.ts",
   "scripts": {
     "pretest": "typings install && tsc",
     "test": "jasmine",
     "prepublish": "node bundle.js"
+  },
+  "engines": {
+    "node": ">=6.5.0"
   },
   "repository": {
     "type": "git",
