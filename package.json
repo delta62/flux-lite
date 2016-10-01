@@ -3,7 +3,6 @@
   "version": "0.2.0",
   "description": "A simplistic implementation of the flux pattern",
   "main": "dist/flux-lite.umd.js",
-  "jsnext:main": "index.js",
   "typings": "index.d.ts",
   "scripts": {
     "pretest": "typings install && tsc",
