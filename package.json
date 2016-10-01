@@ -4,16 +4,11 @@
   "description": "A simplistic implementation of the flux pattern",
   "main": "dist/flux-lite.umd.js",
   "jsnext:main": "index.js",
-  "directories": {
-    "lib": "lib",
-    "test": "spec"
-  },
+  "typings": "index.d.ts",
   "scripts": {
+    "pretest": "typings install && tsc",
     "test": "jasmine",
-    "typings": "typings install",
-    "tsc": "tsc",
-    "prepublish": "npm run tsc && node bundle.js",
-    "clean": "rm -rf index.js index.d.ts dist/ lib/*.js lib/*.d.ts spec/*.js spec/*.d.ts"
+    "prepublish": "node bundle.js"
   },
   "repository": {
     "type": "git",
@@ -25,12 +20,11 @@
     "url": "https://github.com/delta62/flux-lite/issues"
   },
   "homepage": "https://github.com/delta62/flux-lite#readme",
-  "typings": "index.d.ts",
   "devDependencies": {
     "babel-core": "^6.14.0",
-    "jasmine-es6": "^0.3.1",
+    "jasmine-es6": "^0.4.0",
     "systemjs-builder": "^0.15.31",
-    "typescript": "^1.8.10",
+    "typescript": "^2.0.3",
     "typings": "^1.3.3"
   },
   "dependencies": {

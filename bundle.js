@@ -3,6 +3,7 @@
 const Builder = require('systemjs-builder');
 
 let builder = new Builder({
+  transpiler: "typescript",
   map: {
     lib: 'lib'
   },
