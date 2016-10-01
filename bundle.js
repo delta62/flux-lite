@@ -3,13 +3,23 @@
 const Builder = require('systemjs-builder');
 
 let builder = new Builder({
-  transpiler: "typescript",
+  paths: {
+    'npm:': 'node_modules/'
+  },
   map: {
-    lib: 'lib'
+    lib: 'lib',
+    eventemitter3: 'npm:eventemitter3/index.js',
+    'es6-error': 'npm:es6-error/lib/index.js'
   },
   meta: {
     lib: {
       format: 'esm',
+    },
+    eventemitter3: {
+      format: 'cjs'
+    },
+    'es6-error': {
+      format: 'cjs'
     }
   },
   packages: {
@@ -21,11 +31,7 @@ let builder = new Builder({
 
 builder
   .buildStatic('index.js', 'dist/flux-lite.umd.js', {
-    globalName: 'FluxLite',
-    globalDeps: {
-      eventemitter3: 'EventEmitter'
-    },
-    deps: [ 'eventemitter3' ]
+    globalName: 'FluxLite'
   })
   .then(() => console.log('Build complete'))
   .catch(err => console.error(err));
@@ -33,10 +39,6 @@ builder
 builder
   .buildStatic('index.js', 'dist/flux-lite.umd.min.js', {
     globalName: 'FluxLite',
-    globalDeps: {
-      eventemitter3: 'EventEmitter'
-    },
-    deps: [ 'eventemitter3' ],
     minify: true
   })
   .then(() => console.log('Minified build complete'))
