@@ -7,3 +7,4 @@
 *.swp
 *.js.map
 /index.js
+npm-debug.log
