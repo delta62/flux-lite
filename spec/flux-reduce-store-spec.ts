@@ -60,6 +60,11 @@ describe('FluxReduceStore', () => {
       store.invokeOnDispatch(store.reduceResult);
       expect(cb).toHaveBeenCalled();
     });
+
+    it('should re-throw exceptions raised during the reduce', () => {
+      let failStore = new ExplodingReduceStore(dispatcher);
+      expect(() => failStore.invokeOnDispatch(42)).toThrowError(Error);
+    })
   });
 });
 
@@ -71,8 +76,22 @@ class TestReduceStore extends FluxReduceStore<TestObj> {
     return { foo: 'initial' };
   }
 
-  reduce(state: TestObj, action: any): TestObj {
-    return this.reduceResult;
+  reduce(state: TestObj, action: any, cb): void {
+    cb(null, this.reduceResult);
+  }
+
+  invokeOnDispatch(payload): void {
+    this._invokeOnDispatch(payload);
+  }
+}
+
+class ExplodingReduceStore extends FluxReduceStore<number> {
+  getInitialState(): number {
+    return 0;
+  }
+
+  reduce(state: number, action: any, cb): void {
+    cb(new Error('Forgot to take out the trash'));
   }
 
   invokeOnDispatch(payload): void {
