@@ -5,7 +5,7 @@ export type DispatchToken = string;
 export class Dispatcher<TPayload> {
   private static _prefix: string = 'ID_';
 
-  private _callbacks: {[key: string]: (payload: any) => void};
+  private _callbacks: {[key: string]: (payload: any) => Promise<void>};
   private _lastId: number;
   private _isDispatching: boolean;
   private _isPending: {[key: string]: boolean};
@@ -20,7 +20,7 @@ export class Dispatcher<TPayload> {
     this._isDispatching = false;
   }
 
-  register(callback: (payload: TPayload) => void): DispatchToken {
+  register(callback: (payload: TPayload) => Promise<void>): DispatchToken {
     if (this._isDispatching) {
       throw new DispatcherError('Dispatcher.register(...): Cannot register in the middle of a dispatch.');
     }
@@ -41,10 +41,13 @@ export class Dispatcher<TPayload> {
     delete this._callbacks[id];
   }
 
-  waitFor(ids: Array<DispatchToken>): void {
+  waitFor(ids: Array<DispatchToken>): Promise<void> {
     if (!this._isDispatching) {
       throw new DispatcherError('Dispatcher.waitFor(...): Must be invoked while dispatching.');
     }
+
+    let promise = Promise.resolve<void>(null);
+
     for (let ii = 0; ii < ids.length; ii += 1) {
       let id = ids[ii];
       if (!this._isPending[id]) {
@@ -53,8 +56,10 @@ export class Dispatcher<TPayload> {
       if (!this._callbacks[id]) {
         throw new DispatcherError(`Dispatcher.waitFor(...): '${id}' does not map to a registered callback.`);
       }
-      this._invokeCallback(id);
+      promise = promise.then(() => this._invokeCallback(id));
     }
+
+    return promise;
   }
 
   dispatch(payload: TPayload): void {
@@ -78,10 +83,10 @@ export class Dispatcher<TPayload> {
     return this._isDispatching;
   }
 
-  private _invokeCallback(id: DispatchToken): void {
+  private _invokeCallback(id: DispatchToken): Promise<void> {
     this._isPending[id] = true;
-    this._callbacks[id](this._pendingPayload);
-    this._isHandled[id] = true;
+    return this._callbacks[id](this._pendingPayload)
+      .then(() => this._isHandled[id] = true);
   }
 
   private _startDispatching(payload: TPayload): void {

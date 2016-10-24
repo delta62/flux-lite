@@ -76,8 +76,8 @@ class TestReduceStore extends FluxReduceStore<TestObj> {
     return { foo: 'initial' };
   }
 
-  reduce(state: TestObj, action: any, cb): void {
-    cb(null, this.reduceResult);
+  reduce(state: TestObj, action: any): Promise<TestObj> {
+    return Promise.resolve(this.reduceResult);
   }
 
   invokeOnDispatch(payload): void {
@@ -90,8 +90,8 @@ class ExplodingReduceStore extends FluxReduceStore<number> {
     return 0;
   }
 
-  reduce(state: number, action: any, cb): void {
-    cb(new Error('Forgot to take out the trash'));
+  reduce(state: number, action: any): Promise<number> {
+    return Promise.reject(new Error('Forgot to take out the trash'));
   }
 
   invokeOnDispatch(payload): void {

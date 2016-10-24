@@ -2,7 +2,7 @@ import { Dispatcher, DispatcherError } from '../lib/dispatcher';
 
 describe('Dispatcher', () => {
   let dispatcher: Dispatcher<number>;
-  let noop = (payload: any) => { };
+  let noop = (payload: any) => Promise.resolve<void>(null);
 
   beforeEach(() => {
     dispatcher = new Dispatcher<number>();
@@ -40,6 +40,7 @@ describe('Dispatcher', () => {
     it('should throw if unregistering during dispatch', () => {
       let token = dispatcher.register(payload => {
         dispatcher.unregister(token);
+        return Promise.resolve<void>(null);
       });
       expect(() => dispatcher.dispatch(42)).toThrowError(DispatcherError);
     });
@@ -58,9 +59,11 @@ describe('Dispatcher', () => {
     it('should throw when a circular dependency is created', () => {
       let token1 = dispatcher.register(payload => {
         dispatcher.waitFor([ token2 ]);
+        return Promise.resolve<void>(null);
       });
       let token2 = dispatcher.register(payload => {
         dispatcher.waitFor([ token1 ]);
+        return Promise.resolve<void>(null);
       })
 
       expect(() => dispatcher.dispatch(42)).toThrowError(DispatcherError);
@@ -69,6 +72,7 @@ describe('Dispatcher', () => {
     it('should throw when waiting for a non-registered callback', () => {
       dispatcher.register(payload => {
         dispatcher.waitFor([ 'foo' ]);
+        return Promise.resolve<void>(null);
       });
       expect(() => dispatcher.dispatch(42)).toThrowError(DispatcherError);
     });
@@ -81,6 +85,7 @@ describe('Dispatcher', () => {
 
       dispatcher.register(payload => {
         dispatcher.waitFor([ token1, token2 ]);
+        return Promise.resolve<void>(null);
       });
 
       dispatcher.dispatch(42);
@@ -91,12 +96,16 @@ describe('Dispatcher', () => {
 
     it('should invoke awaited callbacks in order', () => {
       let cb1 = jasmine.createSpy('cb1');
-      let cb2 = payload => expect(cb1).toHaveBeenCalled();
+      let cb2 = payload => {
+        expect(cb1).toHaveBeenCalled();
+        return Promise.resolve<void>(null);
+      }
       let token1 = dispatcher.register(cb1);
       let token2 = dispatcher.register(cb2);
 
       dispatcher.register(payload => {
         dispatcher.waitFor([ token1, token2 ]);
+        return Promise.resolve<void>(null);
       });
 
       dispatcher.dispatch(42);
@@ -107,6 +116,7 @@ describe('Dispatcher', () => {
     it('should throw if already dispatching', () => {
       dispatcher.register(payload => {
         dispatcher.dispatch(99);
+        return Promise.resolve<void>(null);
       });
       expect(() => dispatcher.dispatch(11)).toThrowError(DispatcherError);
     });
@@ -140,6 +150,7 @@ describe('Dispatcher', () => {
     it('should return true when dispatching', () => {
       dispatcher.register(payload => {
         expect(dispatcher.isDispatching()).toEqual(true);
+        return Promise.resolve<void>(null);
       });
       dispatcher.dispatch(13);
     });
