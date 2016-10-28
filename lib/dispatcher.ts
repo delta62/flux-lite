@@ -1,5 +1,5 @@
-import ExtendableError from 'es6-error';
 import { Action, CallbackStatus } from './action';
+import { DispatcherError } from './dispatcher-error';
 
 export type DispatchToken = string;
 export type DispatcherCallback<TPayload> = (action: Action<TPayload>) => Promise<void>;
@@ -79,11 +79,5 @@ export class Dispatcher<TPayload> {
             .catch(err => reject(err));
       }
     });
-  }
-}
-
-export class DispatcherError extends ExtendableError {
-  constructor(message) {
-    super(message);
   }
 }

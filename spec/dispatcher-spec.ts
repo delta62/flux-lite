@@ -1,7 +1,7 @@
 import { Action } from '../lib/action';
+import { DispatcherError } from '../lib/dispatcher-error';
 import {
   Dispatcher,
-  DispatcherError,
   DispatcherCallback,
   DispatchToken
 } from '../lib/dispatcher';
@@ -59,17 +59,43 @@ fdescribe('Dispatcher', () => {
   describe('#waitFor', () => {
     it('should reject when waiting for a non-registered callback', done => {
       let token = 'abc';
-      dispatcher.register(waitFor([ token ], dispatcher));
+      dispatcher.register(waitFor(() => token, dispatcher));
       dispatcher.dispatch(42)
+        .then(done.fail)
         .catch(err => expect(err).toEqual(jasmine.any(DispatcherError)))
         .then(done);
     });
 
-    it('should invoke awaited callbacks to completion first');
+    it('should invoke awaited callbacks before awaiting callbacks', done => {
+      let calls = [ ];
+      let cb = () => calls.push(1);
+      let token = dispatcher.register(resolveAfter(1, cb));
+      dispatcher.register(waitFor(() => token, dispatcher));
+      dispatcher.dispatch(42)
+        .then(() => expect(calls).toEqual([ 1, 2 ]))
+        .catch(done.fail)
+        .then(done);
+    });
 
-    it('should reject when deadlock occurs');
+    it('should reject when deadlock occurs', done => {
+      let token1 = dispatcher.register(waitFor(() => token2, dispatcher));
+      let token2 = dispatcher.register(waitFor(() => token1, dispatcher));
+      dispatcher.dispatch(42)
+        .then(done.fail)
+        .catch(err => expect(err).toEqual(jasmine.any(DispatcherError)))
+        .then(done);
+    });
 
-    it('should not re-run callbacks awaited twice');
+    it('should not re-run callbacks awaited twice', done => {
+      let cb = jasmine.createSpy('runOnce');
+      let runOnceToken = dispatcher.register(resolveAfter(1, cb));
+      dispatcher.register(waitFor(() => runOnceToken, dispatcher));
+      dispatcher.register(waitFor(() => runOnceToken, dispatcher));
+      dispatcher.dispatch(42)
+        .then(() => expect(cb).toHaveBeenCalledTimes(1))
+        .catch(done.fail)
+        .then(done);
+    });
   });
 
   describe('#dispatch', () => {
@@ -102,7 +128,7 @@ fdescribe('Dispatcher', () => {
 
     it('should invoke async callbacks', done => {
       let cb = jasmine.createSpy('cb');
-      dispatcher.register(resolveAfter(5, cb));
+      dispatcher.register(resolveAfter(1, cb));
       dispatcher.dispatch(42)
         .then(() => expect(cb).toHaveBeenCalled())
         .then(done);
@@ -110,15 +136,16 @@ fdescribe('Dispatcher', () => {
 
     it('should provide the correct value to async callbacks', done => {
       let cb = jasmine.createSpy('cb');
-      dispatcher.register(resolveAfter(5, cb));
+      dispatcher.register(resolveAfter(1, cb));
       dispatcher.dispatch(42)
         .then(() => expect(cb).toHaveBeenCalledWith(jasmine.objectContaining({ payload: 42 })))
         .then(done);
     });
 
     it('should reject when a store rejects its promise', done => {
-      dispatcher.register(rejectAfter(5));
+      dispatcher.register(rejectAfter(1));
       dispatcher.dispatch(42)
+        .then(done.fail)
         .catch(err => expect(err).toEqual(jasmine.any(Error)))
         .then(done);
     });
@@ -126,6 +153,7 @@ fdescribe('Dispatcher', () => {
     it('should reject when a store throws', done => {
       dispatcher.register(failingStoreCallback);
       dispatcher.dispatch(42)
+        .then(done.fail)
         .catch(err => expect(err).toEqual(jasmine.any(Error)))
         .then(done);
     });
@@ -148,12 +176,12 @@ function rejectAfter(millis: number): DispatcherCallback<number> {
 }
 
 function waitFor(
-    otherStores: Array<DispatchToken>,
+    token: () => DispatchToken,
     dispatcher: Dispatcher<number>): DispatcherCallback<number> {
 
   return action => new Promise((resolve, reject) => {
     setTimeout(() => {
-      dispatcher.waitFor(otherStores, action)
+      dispatcher.waitFor([ token() ], action)
         .then(() => resolve())
         .catch(reject);
     }, 1);
