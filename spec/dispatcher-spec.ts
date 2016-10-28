@@ -6,7 +6,7 @@ import {
   DispatchToken
 } from '../lib/dispatcher';
 
-fdescribe('Dispatcher', () => {
+describe('Dispatcher', () => {
   let dispatcher: Dispatcher<number>;
   let noop = (payload: any) => Promise.resolve<void>(null);
 
@@ -66,23 +66,16 @@ fdescribe('Dispatcher', () => {
         .then(done);
     });
 
-    it('should invoke awaited callbacks before awaiting callbacks', done => {
-      let calls = [ ];
-      let cb = () => calls.push(1);
-      let token = dispatcher.register(resolveAfter(1, cb));
-      dispatcher.register(waitFor(() => token, dispatcher));
+    it('should invoke awaited callbacks before calling awaiting callbacks', done => {
+      let trackingFn = jasmine.createSpy('trackingFn');
+      let token = dispatcher.register(resolveAfter(1, () => trackingFn('first')));
+      dispatcher.register(waitFor(() => token, dispatcher, () => trackingFn('second')));
       dispatcher.dispatch(42)
-        .then(() => expect(calls).toEqual([ 1, 2 ]))
+        .then(() => {
+          expect(trackingFn.calls.first().args[0]).toEqual('first');
+          expect(trackingFn.calls.mostRecent().args[0]).toEqual('second');
+        })
         .catch(done.fail)
-        .then(done);
-    });
-
-    it('should reject when deadlock occurs', done => {
-      let token1 = dispatcher.register(waitFor(() => token2, dispatcher));
-      let token2 = dispatcher.register(waitFor(() => token1, dispatcher));
-      dispatcher.dispatch(42)
-        .then(done.fail)
-        .catch(err => expect(err).toEqual(jasmine.any(DispatcherError)))
         .then(done);
     });
 
@@ -177,11 +170,15 @@ function rejectAfter(millis: number): DispatcherCallback<number> {
 
 function waitFor(
     token: () => DispatchToken,
-    dispatcher: Dispatcher<number>): DispatcherCallback<number> {
+    dispatcher: Dispatcher<number>,
+    callback?: Function): DispatcherCallback<number> {
 
   return action => new Promise((resolve, reject) => {
     setTimeout(() => {
       dispatcher.waitFor([ token() ], action)
+        .then(() => {
+          callback && callback();
+        })
         .then(() => resolve())
         .catch(reject);
     }, 1);

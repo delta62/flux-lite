@@ -1,4 +1,4 @@
-import { Action, CallbackStatus } from './action';
+import { Action } from './action';
 import { DispatcherError } from './dispatcher-error';
 
 export type DispatchToken = string;
@@ -44,14 +44,9 @@ export class Dispatcher<TPayload> {
   }
 
   private _buildAction(payload: TPayload): Action<TPayload> {
-    let callbacks = Object.keys(this._callbacks).reduce((acc, key) => {
-      acc[key] = CallbackStatus.NotStarted;
-      return acc;
-    }, { });
-
     return {
       payload,
-      _callbacks: callbacks
+      _callbacks: { }
     };
   }
 
@@ -65,19 +60,13 @@ export class Dispatcher<TPayload> {
   }
 
   private _executeCallback(key: string, action: Action<TPayload>): Promise<void> {
+    if (action._callbacks[key]) {
+      return action._callbacks[key];
+    }
     return new Promise((resolve, reject) => {
-      switch (action._callbacks[key]) {
-        case CallbackStatus.Awaiting:
-          return reject(new DispatcherError(`Circular dependency detected while waiting for ${key}`));
-        case CallbackStatus.Completed:
-          return resolve();
-        case CallbackStatus.NotStarted:
-          action._callbacks[key] = CallbackStatus.Awaiting;
-          return this._callbacks[key](action)
-            .then(() => action._callbacks[key] = CallbackStatus.Completed)
-            .then(() => resolve())
-            .catch(err => reject(err));
-      }
+      let promise = this._callbacks[key](action);
+      action._callbacks[key] = promise;
+      return promise.then(() => resolve()).catch(reject);
     });
   }
 }
