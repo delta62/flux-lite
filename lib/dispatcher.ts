@@ -1,106 +1,77 @@
 import ExtendableError from 'es6-error';
+import { Action, CallbackStatus } from './action';
 
 export type DispatchToken = string;
+export type DispatcherCallback<TPayload> = (action: Action<TPayload>) => Promise<void>;
 
 export class Dispatcher<TPayload> {
-  private static _prefix: string = 'ID_';
-
-  private _callbacks: {[key: string]: (payload: any) => Promise<void>};
+  private _callbacks: { [key: string]: DispatcherCallback<TPayload> };
   private _lastId: number;
-  private _isDispatching: boolean;
-  private _isPending: {[key: string]: boolean};
-  private _pendingPayload: TPayload;
-  private _isHandled: {[key: string]: boolean};
 
   constructor() {
     this._callbacks = { };
-    this._isPending = { };
-    this._isHandled = { };
     this._lastId = 1;
-    this._isDispatching = false;
   }
 
-  register(callback: (payload: TPayload) => Promise<void>): DispatchToken {
-    if (this._isDispatching) {
-      throw new DispatcherError('Dispatcher.register(...): Cannot register in the middle of a dispatch.');
-    }
-
-    let id = `${Dispatcher._prefix}${this._lastId}`;
+  register(callback: DispatcherCallback<TPayload>): DispatchToken {
+    let id = this._lastId;
     this._lastId += 1;
     this._callbacks[id] = callback;
-    return id;
+    return `${id}`;
   }
 
   unregister(id: DispatchToken): void {
-    if (this._isDispatching) {
-      throw new DispatcherError('Dispatcher.unregister(...): Cannot unregister in the middle of a dispatch.');
-    }
-    if (!this._callbacks[id]) {
-      throw new DispatcherError(`Dispatcher.unregister(...): '${id}' does not map to a registered callback.`);
-    }
+    this._ensureCallbackExists(id);
     delete this._callbacks[id];
   }
 
-  waitFor(ids: Array<DispatchToken>): Promise<void> {
-    if (!this._isDispatching) {
-      throw new DispatcherError('Dispatcher.waitFor(...): Must be invoked while dispatching.');
+  waitFor(ids: Array<DispatchToken>, action: Action<TPayload>): Promise<void> {
+    return Promise.all(ids.map(id => {
+      this._ensureCallbackExists(id);
+      return this._executeCallback(id, action);
+    }));
+  }
+
+  dispatch(payload: TPayload): Promise<void> {
+    let action = this._buildAction(payload);
+    return Promise.all(Object.getOwnPropertyNames(this._callbacks).map(id => {
+      return this._executeCallback(id, action);
+    }));
+  }
+
+  private _buildAction(payload: TPayload): Action<TPayload> {
+    let callbacks = Object.keys(this._callbacks).reduce((acc, key) => {
+      acc[key] = CallbackStatus.NotStarted;
+      return acc;
+    }, { });
+
+    return {
+      payload,
+      _callbacks: callbacks
+    };
+  }
+
+  private _ensureCallbackExists(id: DispatchToken): void {
+    if (!this._callbacks[id]) {
+      let msg = `'${id}' does not map to a registered callback.`;
+      throw new DispatcherError(msg);
     }
+  }
 
-    let promise = Promise.resolve<void>(null);
-
-    for (let ii = 0; ii < ids.length; ii += 1) {
-      let id = ids[ii];
-      if (!this._isPending[id]) {
-        throw new DispatcherError(`Dispatcher.waitFor(...): Circular dependency detected while waiting for ${id}`);
+  private _executeCallback(key: string, action: Action<TPayload>): Promise<void> {
+    return new Promise((resolve, reject) => {
+      switch (action._callbacks[key]) {
+        case CallbackStatus.Awaiting:
+          return reject(new DispatcherError(`Circular dependency detected while waiting for ${key}`));
+        case CallbackStatus.Completed:
+          return resolve();
+        case CallbackStatus.NotStarted:
+          action._callbacks[key] = CallbackStatus.Awaiting;
+          return this._callbacks[key](action)
+            .then(() => action._callbacks[key] = CallbackStatus.Completed)
+            .then(() => resolve());
       }
-      if (!this._callbacks[id]) {
-        throw new DispatcherError(`Dispatcher.waitFor(...): '${id}' does not map to a registered callback.`);
-      }
-      promise = promise.then(() => this._invokeCallback(id));
-    }
-
-    return promise;
-  }
-
-  dispatch(payload: TPayload): void {
-    if (this._isDispatching) {
-      throw new DispatcherError('Dispatch.dispatch(...): Cannot dispatch in the middle of a dispatch.');
-    }
-    this._startDispatching(payload);
-    try {
-      for (let id in this._callbacks) {
-        if (this._isPending[id]) {
-          continue;
-        }
-        this._invokeCallback(id);
-      }
-    } finally {
-      this._stopDispatching();
-    }
-  }
-
-  isDispatching(): boolean {
-    return this._isDispatching;
-  }
-
-  private _invokeCallback(id: DispatchToken): Promise<void> {
-    this._isPending[id] = true;
-    return this._callbacks[id](this._pendingPayload)
-      .then(() => this._isHandled[id] = true);
-  }
-
-  private _startDispatching(payload: TPayload): void {
-    for (let id in this._callbacks) {
-      this._isPending[id] = false;
-      this._isHandled[id] = false;
-    }
-    this._pendingPayload = payload;
-    this._isDispatching = true;
-  }
-
-  private _stopDispatching(): void {
-    delete this._pendingPayload;
-    this._isDispatching = false;
+    });
   }
 }
 

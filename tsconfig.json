@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "module": "es6",
-    "lib": [ "es5", "es2015.promise" ],
-    "declaration": true,
+    "typeRoots": [ "node_modules/@types" ],
     "moduleResolution": "node"
   }
 }

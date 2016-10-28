@@ -1,27 +1,27 @@
-import { FluxReduceStore } from '../lib/flux-reduce-store';
-import { StoreError } from '../lib/flux-store';
+import { FluxStore, StoreError } from '../lib/flux-store';
 
-describe('FluxReduceStore', () => {
-  let store: TestReduceStore;
+describe('FluxStore', () => {
+  let store: TestStore;
   let dispatcher;
 
   beforeEach(() => {
     dispatcher = {
-      register: () => { },
+      cb: null,
+      dispatch: data => dispatcher.cb(data),
+      register: cb => dispatcher.cb = cb,
       isDispatching: () => true
-    }
-    store = new TestReduceStore(dispatcher);
+    };
+    store = new TestStore(dispatcher);
   });
 
   describe('#getState', () => {
     it('should return the initial state', () => {
-      expect(store.getState()).toEqual({ foo: 'initial' });
+      expect(store.state).toEqual({ foo: 'initial' });
     });
 
     it('should return up-to-date state after modifications', () => {
       store.reduceResult = { foo: 'bar' };
-      store.invokeOnDispatch({ foo: 'bar' });
-      expect(store.getState()).toEqual({ foo: 'bar' });
+      expect(store.state).toEqual({ foo: 'bar' });
     });
   });
 
@@ -42,14 +42,13 @@ describe('FluxReduceStore', () => {
   describe('#_invokeOnDispatch', () => {
     it('should throw if reduce returns undefined', () => {
       store.reduceResult = undefined;
-      expect(() => store.invokeOnDispatch(42)).toThrowError(StoreError);
+      expect(() => dispatcher.dispatch(42)).toThrowError(StoreError);
     });
 
     it('should take no action if no change has occurred', () => {
       let cb = jasmine.createSpy('cb');
-      store.reduceResult = store.getState();
+      store.reduceResult = store.state;
       store.addListener(cb);
-      store.invokeOnDispatch(store.reduceResult);
       expect(cb).not.toHaveBeenCalled();
     });
 
@@ -57,18 +56,17 @@ describe('FluxReduceStore', () => {
       let cb = jasmine.createSpy('cb');
       store.reduceResult = { foo: 'changed' };
       store.addListener(cb);
-      store.invokeOnDispatch(store.reduceResult);
       expect(cb).toHaveBeenCalled();
     });
 
     it('should re-throw exceptions raised during the reduce', () => {
-      let failStore = new ExplodingReduceStore(dispatcher);
-      expect(() => failStore.invokeOnDispatch(42)).toThrowError(Error);
+      let failStore = new ExplodingStore(dispatcher);
+      expect(() => dispatcher.dispatch(42)).toThrowError(Error);
     })
   });
 });
 
-class TestReduceStore extends FluxReduceStore<TestObj> {
+class TestStore extends FluxStore<TestObj> {
 
   reduceResult: TestObj;
 
@@ -79,23 +77,15 @@ class TestReduceStore extends FluxReduceStore<TestObj> {
   reduce(state: TestObj, action: any): Promise<TestObj> {
     return Promise.resolve(this.reduceResult);
   }
-
-  invokeOnDispatch(payload): void {
-    this._invokeOnDispatch(payload);
-  }
 }
 
-class ExplodingReduceStore extends FluxReduceStore<number> {
+class ExplodingStore extends FluxStore<number> {
   getInitialState(): number {
     return 0;
   }
 
   reduce(state: number, action: any): Promise<number> {
     return Promise.reject(new Error('Forgot to take out the trash'));
-  }
-
-  invokeOnDispatch(payload): void {
-    this._invokeOnDispatch(payload);
   }
 }
 

@@ -35,9 +35,9 @@ export abstract class FluxStore<TState> {
   }
 
   addListener(callback: (eventType?: string) => void): ListenerMeta {
-    this._emitter.on(FluxReduceStore.CHANGE_EVENT, callback);
+    this._emitter.on(FluxStore.CHANGE_EVENT, callback);
     return {
-      remove: () => this._emitter.removeListener(FluxReduceStore.CHANGE_EVENT, callback)
+      remove: () => this._emitter.removeListener(FluxStore.CHANGE_EVENT, callback)
     }
   }
 
@@ -54,7 +54,7 @@ export abstract class FluxStore<TState> {
 
         if (!this.areEqual(this._state, endingState)) {
           this._state = endingState;
-          this._emitter.emit(FluxReduceStore.CHANGE_EVENT);
+          this._emitter.emit(FluxStore.CHANGE_EVENT);
         }
       });
   }
