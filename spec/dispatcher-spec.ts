@@ -1,5 +1,10 @@
 import { Action } from '../lib/action';
-import { Dispatcher, DispatcherError, DispatcherCallback } from '../lib/dispatcher';
+import {
+  Dispatcher,
+  DispatcherError,
+  DispatcherCallback,
+  DispatchToken
+} from '../lib/dispatcher';
 
 fdescribe('Dispatcher', () => {
   let dispatcher: Dispatcher<number>;
@@ -37,12 +42,13 @@ fdescribe('Dispatcher', () => {
   });
 
   describe('#unregister', () => {
-    it('should not invoke callback after unregistration', () => {
+    it('should not invoke callback after unregistration', done => {
       let cb = jasmine.createSpy('cb');
-      let token = dispatcher.register(cb);
+      let token = dispatcher.register(resolveWith(cb));
       dispatcher.unregister(token);
-      dispatcher.dispatch(42);
-      expect(cb).not.toHaveBeenCalled();
+      dispatcher.dispatch(42)
+        .then(() => expect(cb).not.toHaveBeenCalled())
+        .then(done);
     });
 
     it('should throw when unregistering a non-registered callback', () => {
@@ -50,49 +56,21 @@ fdescribe('Dispatcher', () => {
     });
   });
 
-  // describe('#waitFor', () => {
-  //   it('should throw when waiting for a non-registered callback', (done) => {
-  //     dispatcher.register(payload => {
-  //       dispatcher.waitFor([ 'foo' ], payload);
-  //       return Promise.resolve<void>(null);
-  //     });
-  //     dispatcher.dispatch(42).catch(err => done());
-  //   });
+  describe('#waitFor', () => {
+    it('should reject when waiting for a non-registered callback', done => {
+      let token = 'abc';
+      dispatcher.register(waitFor([ token ], dispatcher));
+      dispatcher.dispatch(42)
+        .catch(err => expect(err).toEqual(jasmine.any(DispatcherError)))
+        .then(done);
+    });
 
-  //   it('should invoke all awaited callbacks', () => {
-  //     let cb1 = jasmine.createSpy('cb1');
-  //     let cb2 = jasmine.createSpy('cb2');
-  //     let token1 = dispatcher.register(cb1);
-  //     let token2 = dispatcher.register(cb2);
+    it('should invoke awaited callbacks to completion first');
 
-  //     dispatcher.register(payload => {
-  //       dispatcher.waitFor([ token1, token2 ], payload);
-  //       return Promise.resolve<void>(null);
-  //     });
+    it('should reject when deadlock occurs');
 
-  //     dispatcher.dispatch(42);
-
-  //     expect(cb1).toHaveBeenCalled();
-  //     expect(cb2).toHaveBeenCalled();
-  //   });
-
-  //   it('should invoke awaited callbacks in order', () => {
-  //     let cb1 = jasmine.createSpy('cb1');
-  //     let cb2 = payload => {
-  //       expect(cb1).toHaveBeenCalled();
-  //       return Promise.resolve<void>(null);
-  //     }
-  //     let token1 = dispatcher.register(cb1);
-  //     let token2 = dispatcher.register(cb2);
-
-  //     dispatcher.register(payload => {
-  //       dispatcher.waitFor([ token1, token2 ], payload);
-  //       return Promise.resolve<void>(null);
-  //     });
-
-  //     dispatcher.dispatch(42);
-  //   });
-  // });
+    it('should not re-run callbacks awaited twice');
+  });
 
   describe('#dispatch', () => {
     it('should invoke a single registered callback', done => {
@@ -137,6 +115,20 @@ fdescribe('Dispatcher', () => {
         .then(() => expect(cb).toHaveBeenCalledWith(jasmine.objectContaining({ payload: 42 })))
         .then(done);
     });
+
+    it('should reject when a store rejects its promise', done => {
+      dispatcher.register(rejectAfter(5));
+      dispatcher.dispatch(42)
+        .catch(err => expect(err).toEqual(jasmine.any(Error)))
+        .then(done);
+    });
+
+    it('should reject when a store throws', done => {
+      dispatcher.register(failingStoreCallback);
+      dispatcher.dispatch(42)
+        .catch(err => expect(err).toEqual(jasmine.any(Error)))
+        .then(done);
+    });
   });
 });
 
@@ -147,4 +139,27 @@ function resolveWith(callback: (val) => void): DispatcherCallback<number> {
 function resolveAfter(millis: number, callback: (val) => void): DispatcherCallback<number> {
   return action => new Promise(resolve => setTimeout(resolve, millis))
     .then(() => callback(action));
+}
+
+function rejectAfter(millis: number): DispatcherCallback<number> {
+  return action => new Promise((resolve, reject) => {
+    setTimeout(() => reject(new Error('Error resolving store promise')), millis);
+  });
+}
+
+function waitFor(
+    otherStores: Array<DispatchToken>,
+    dispatcher: Dispatcher<number>): DispatcherCallback<number> {
+
+  return action => new Promise((resolve, reject) => {
+    setTimeout(() => {
+      dispatcher.waitFor(otherStores, action)
+        .then(() => resolve())
+        .catch(reject);
+    }, 1);
+  });
+}
+
+function failingStoreCallback(action): Promise<void> {
+  throw new Error('Error in store callback');
 }

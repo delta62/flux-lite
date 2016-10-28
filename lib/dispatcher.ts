@@ -21,13 +21,17 @@ export class Dispatcher<TPayload> {
   }
 
   unregister(id: DispatchToken): void {
-    this._ensureCallbackExists(id);
+    if(!this._callbackExists(id)) {
+      throw this._callbackNotFoundError(id);
+    }
     delete this._callbacks[id];
   }
 
   waitFor(ids: Array<DispatchToken>, action: Action<TPayload>): Promise<void> {
     return Promise.all(ids.map(id => {
-      this._ensureCallbackExists(id);
+      if (!this._callbackExists(id)) {
+        return Promise.reject(this._callbackNotFoundError(id));
+      }
       return this._executeCallback(id, action);
     }));
   }
@@ -51,11 +55,13 @@ export class Dispatcher<TPayload> {
     };
   }
 
-  private _ensureCallbackExists(id: DispatchToken): void {
-    if (!this._callbacks[id]) {
-      let msg = `'${id}' does not map to a registered callback.`;
-      throw new DispatcherError(msg);
-    }
+  private _callbackExists(id: DispatchToken): boolean {
+    return !!this._callbacks[id];
+  }
+
+  private _callbackNotFoundError(id: DispatchToken): DispatcherError {
+    let msg = `'${id}' does not map to a registered callback.`;
+    return new DispatcherError(msg);
   }
 
   private _executeCallback(key: string, action: Action<TPayload>): Promise<void> {
@@ -69,7 +75,8 @@ export class Dispatcher<TPayload> {
           action._callbacks[key] = CallbackStatus.Awaiting;
           return this._callbacks[key](action)
             .then(() => action._callbacks[key] = CallbackStatus.Completed)
-            .then(() => resolve());
+            .then(() => resolve())
+            .catch(err => reject(err));
       }
     });
   }
