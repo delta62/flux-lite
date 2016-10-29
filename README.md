@@ -2,16 +2,16 @@
 [![npm version](https://badge.fury.io/js/flux-lite.svg)](https://badge.fury.io/js/flux-lite)
 
 # flux-lite
-This is a simplistic implementation of the flux pattern based off of [Facebook's own implementation](https://github.com/facebook/flux). This project aims to provide a simple, lightweight, and unopinionated interface.
+This is a simplistic implementation of the flux pattern based off of [Facebook's own implementation](https://github.com/facebook/flux). This project aims to provide a simple, lightweight, and unopinionated interface that works well with asynchronous tasks.
 
 This project was written in TypeScript, so no additional definitions are necessary if that's what you're using too. Of course, everything still works great with vanilla JavaScript.
 
 # API
 
 ## Dispatcher
-The dispatcher handles routing of actions to stores. Constructs that create actions send the actions via the `dispatch` method, while stores subscribe to actions using the `register` and `unregister methods.
+The dispatcher handles routing of actions to stores. Constructs that create actions send the actions via the `dispatch` method, while stores subscribe to actions using the `register` and `unregister` methods.
 
-### dispatch(action)
+### dispatch(payload)
 Dispatch a new action to all stores that have `register`ed. Every store will be invoked with the action. It's up to you to decide how actions are structured, but usually each action has a `type` property to identify what's going on.
 
 ``` js
@@ -27,13 +27,10 @@ Register a new callback with the dispatcher. The callback will be invoked every 
 ### unregister(token)
 Unregister a callback from the dispatcher, unsubscribing from all actions that are dispatched. This function takes as input the token that was returned from `register`.
 
-### waitFor([ tokens, ... ])
-This function is invoked by stores during the dispatch process. `waitFor` waits for other stores to update before proceeding with the current one. Pass the tokens for each store that should update before this one.
+### waitFor([ tokens, ... ], action)
+This function is invoked by stores during the dispatch process. `waitFor` waits for other stores to update before proceeding with the current one. Pass the tokens for each store that should update before this one in addition to the action that is currently being processed.
 
-### isDispatching()
-Determine whether or not an action is currently being dispatched.
-
-## FluxReduceStore
+## FluxStore
 This is an abstract class that you should extend to create stores of your own. Typical implementations will need to override `areEqual`, `getInitialState`, and `reduce`.
 
 ### getInitialState() [REQUIRED]
@@ -52,7 +49,7 @@ class ShoppingCartStore extends FluxReduceStore {
 ```
 
 ### reduce(state, action) [REQUIRED]
-Override this function to tell `flux-lite` how to update your stores. Reduce takes the current state of the store as well as an action and returns what the new state of the store should be. Simply return `state` to ignore the action, or perform some calculations and return a new state object.
+Override this function to tell `flux-lite` how to update your stores. Reduce takes the current state of the store as well as an action and returns a promise resolving to what the new state of the store should be. Simply resolve to `state` to ignore the action, or perform some calculations and return a new state object.
 
 ``` js
 class ShoppingCartStore extends FluxReduceStore {
@@ -61,19 +58,19 @@ class ShoppingCartStore extends FluxReduceStore {
   reduce(state, action) {
     switch (action.type) {
       case 'cartItemAdded':
-        return state.slice().push({ name: action.itemName });
+        return Promise.resolve(state.slice().push({ name: action.itemName }));
       case 'cartItemRemoved':
         let itemIndex = state.indexOf(action.item);
-        return state.slice().splice(itemIndex, 1);
+        let stateCopy = state.slice().splice(itemIndex, 1);
+        return Promise.resolve(stateCopy);
+      default:
+        return Promise.resolve(state);
     }
   }
   
   // ...
 }
 ```
-
-### getState()
-Get the current state of the store. Consumers of the store can access the full state of the store through this method, although you may want to provide more specialized methods that expose only needed data as well.
 
 ### areEqual(x, y)
 This is how the store determines if two states are equivilent. By default `areEqual` does a reference compare (`===`), but it can be overridden for custom equality checking logic.
@@ -90,5 +87,14 @@ class ShoppingCartStore extends FluxReduceStore {
 }
 ```
 
-## FluxStore
-This is the low-level flux store implementation. You typically will not need to use this class directly. If you need to do something fancy, this store can be extended for custom store logic.
+### state
+Get the current state of the store. Consumers of the store can access the full state of the store through this method, although you may want to provide more specialized methods that expose only needed data as well.
+
+### dispatcher
+Get a reference to the dispatcher that this store was registered with
+
+### dispatchToken
+Get the dispatch token given to this store when it registered with the dispatcher
+
+### addListener(callback)
+Registers a callback with the store that will be invoked every time the store changes. No parameters are passed to the callback. If you need to know about the state of the store, query it directly from the callback.
