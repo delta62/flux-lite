@@ -1,6 +1,5 @@
 import { Action } from '../lib/action';
 import { FluxStore } from '../lib/flux-store';
-import { StoreError } from '../lib/store-error';
 import { DispatcherCallback, DispatchToken } from '../lib/dispatcher';
 
 describe('FluxStore', () => {
@@ -77,7 +76,7 @@ describe('FluxStore', () => {
     it('should throw if reduce returns undefined', done => {
       registeredCallback(action(undefined))
         .then(done.fail)
-        .catch(err => expect(err).toEqual(jasmine.any(StoreError)))
+        .catch(err => expect(err).toEqual(jasmine.any(Error)))
         .then(done);
     });
   });

@@ -1,5 +1,4 @@
 import { Action } from '../lib/action';
-import { DispatcherError } from '../lib/dispatcher-error';
 import {
   Dispatcher,
   DispatcherCallback,
@@ -38,7 +37,7 @@ describe('Dispatcher', () => {
     });
 
     it('should throw when unregistering a non-registered callback', () => {
-      expect(() => dispatcher.unregister('foo')).toThrowError(DispatcherError);
+      expect(() => dispatcher.unregister('foo')).toThrow();
     });
   });
 
@@ -48,7 +47,7 @@ describe('Dispatcher', () => {
       dispatcher.register(waitFor(() => token, dispatcher));
       dispatcher.dispatch(42)
         .then(done.fail)
-        .catch(err => expect(err).toEqual(jasmine.any(DispatcherError)))
+        .catch(err => expect(err).toEqual(jasmine.any(Error)))
         .then(done);
     });
 

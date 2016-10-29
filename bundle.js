@@ -8,17 +8,13 @@ let builder = new Builder({
   },
   map: {
     lib: 'lib',
-    eventemitter3: 'npm:eventemitter3/index.js',
-    'es6-error': 'npm:es6-error/lib/index.js'
+    eventemitter3: 'npm:eventemitter3/index.js'
   },
   meta: {
     lib: {
       format: 'esm',
     },
     eventemitter3: {
-      format: 'cjs'
-    },
-    'es6-error': {
       format: 'cjs'
     }
   },
