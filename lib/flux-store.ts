@@ -1,6 +1,6 @@
-import { Dispatcher, DispatchToken } from './dispatcher';
 import { EventEmitter } from 'eventemitter3';
-import ExtendableError from 'es6-error';
+import { Dispatcher, DispatchToken } from './dispatcher';
+import { StoreError } from './store-error';
 
 export type ListenerMeta = { remove: () => void };
 
@@ -34,7 +34,7 @@ export abstract class FluxStore<TState> {
     return this._dispatchToken;
   }
 
-  addListener(callback: (eventType?: string) => void): ListenerMeta {
+  addListener(callback: () => void): ListenerMeta {
     this._emitter.on(FluxStore.CHANGE_EVENT, callback);
     return {
       remove: () => this._emitter.removeListener(FluxStore.CHANGE_EVENT, callback)
@@ -57,11 +57,5 @@ export abstract class FluxStore<TState> {
           this._emitter.emit(FluxStore.CHANGE_EVENT);
         }
       });
-  }
-}
-
-export class StoreError extends ExtendableError {
-  constructor(message) {
-    super(message);
   }
 }

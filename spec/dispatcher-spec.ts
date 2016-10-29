@@ -25,20 +25,6 @@ describe('Dispatcher', () => {
       let token2 = dispatcher.register(noop);
       expect(token1).not.toEqual(token2);
     });
-
-    it('should invoke the callback', () => {
-      let cb = jasmine.createSpy('cb');
-      dispatcher.register(cb);
-      dispatcher.dispatch(42);
-      expect(cb).toHaveBeenCalled();
-    });
-
-    it('should invoke callbacks with expected state', () => {
-      let cb = jasmine.createSpy('cb');
-      dispatcher.register(cb);
-      dispatcher.dispatch(42);
-      expect(cb).toHaveBeenCalledWith(jasmine.objectContaining({ payload: 42 }));
-    })
   });
 
   describe('#unregister', () => {
