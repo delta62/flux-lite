@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/delta62/flux-lite#readme",
   "devDependencies": {
+    "@types/jasmine": "^2.5.36",
     "@types/node": "^6.0.46",
     "babel-core": "^6.17.0",
     "jasmine-es6": "^0.4.0",
