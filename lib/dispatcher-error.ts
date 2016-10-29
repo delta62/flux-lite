@@ -1,6 +1,4 @@
-import ExtendableError from 'es6-error';
-
-export class DispatcherError extends ExtendableError {
+export class DispatcherError extends Error {
   constructor(message: string) {
     super(message);
   }
