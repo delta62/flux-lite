@@ -9,7 +9,7 @@
     "start": "nodemon -e ts --exec npm test",
     "pretest": "tsc",
     "test": "jasmine",
-    "prepublish": "node bundle.js"
+    "prepublish": "npm run pretest && node bundle.js"
   },
   "engines": {
     "node": ">=6.5.0"
