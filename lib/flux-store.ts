@@ -18,9 +18,9 @@ export abstract class FluxStore<TState> {
     this._state = this.getInitialState();
   }
 
-  abstract getInitialState(): TState;
+  protected abstract getInitialState(): TState;
 
-  abstract reduce(state: TState, action: any): Promise<TState>;
+  protected abstract reduce(state: TState, action: any): Promise<TState>;
 
   get state(): TState {
     return this._state;
@@ -45,7 +45,7 @@ export abstract class FluxStore<TState> {
     return x === y;
   }
 
-  private _invokeOnDispatch(payload: any): Promise<TState> {
+  private _invokeOnDispatch(payload: any): Promise<void> {
     return this.reduce(this._state, payload)
       .then(endingState => {
         if (endingState === undefined) {
