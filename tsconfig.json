@@ -3,6 +3,13 @@
     "target": "es6",
     "module": "es6",
     "typeRoots": [ "node_modules/@types" ],
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "declaration": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "pretty": true,
+    "strictNullChecks": true
   }
 }

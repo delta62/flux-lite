@@ -8,7 +8,7 @@ import {
 
 describe('Dispatcher', () => {
   let dispatcher: Dispatcher<number>;
-  let noop = (payload: any) => Promise.resolve<void>(null);
+  let noop = (payload: any) => Promise.resolve<number>(42);
 
   beforeEach(() => {
     dispatcher = new Dispatcher<number>();
@@ -139,11 +139,11 @@ describe('Dispatcher', () => {
   });
 });
 
-function resolveWith(callback: (val) => void): DispatcherCallback<number> {
+function resolveWith(callback: (val: Action<number>) => void): DispatcherCallback<number> {
   return (action: Action<number>) => Promise.resolve(action).then(callback);
 }
 
-function resolveAfter(millis: number, callback: (val) => void): DispatcherCallback<number> {
+function resolveAfter(millis: number, callback: (val: Action<number>) => void): DispatcherCallback<number> {
   return action => new Promise(resolve => setTimeout(resolve, millis))
     .then(() => callback(action));
 }
@@ -171,6 +171,6 @@ function waitFor(
   });
 }
 
-function failingStoreCallback(action): Promise<void> {
+function failingStoreCallback(action: Action<any>): Promise<void> {
   throw new Error('Error in store callback');
 }

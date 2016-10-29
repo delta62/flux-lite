@@ -9,7 +9,7 @@ describe('FluxStore', () => {
 
   beforeEach(() => {
     let dispatcher: any = {
-      register: callback => registeredCallback = callback
+      register: (callback: DispatcherCallback<any>) => registeredCallback = callback
     };
     store = new TestStore(dispatcher);
   });
@@ -103,17 +103,8 @@ class TestStore extends FluxStore<TestObj> {
   }
 
   reduce(state: TestObj, action: Action<TestObj>): Promise<void> {
-    return Promise.resolve(action.payload);
-  }
-}
-
-class ExplodingStore extends FluxStore<number> {
-  getInitialState(): number {
-    return 0;
-  }
-
-  reduce(state: number, action: any): Promise<number> {
-    return Promise.reject(new Error('Forgot to take out the trash'));
+    state = action.payload;
+    return Promise.resolve(state);
   }
 }
 
