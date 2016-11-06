@@ -6,9 +6,10 @@ import { DispatcherCallback, DispatchToken } from '../lib/dispatcher';
 describe('FluxStore', () => {
   let store: TestStore;
   let registeredCallback: DispatcherCallback<any>;
+  let dispatcher: any;
 
   beforeEach(() => {
-    let dispatcher: any = {
+    dispatcher = {
       register: (callback: DispatcherCallback<any>) => registeredCallback = callback
     };
     store = new TestStore(dispatcher);
@@ -47,6 +48,15 @@ describe('FluxStore', () => {
     it('should invoke the callback when a change occurs', done => {
       let cb = jasmine.createSpy('cb');
       store.addListener(cb);
+      registeredCallback(action({ foo: 'bar' }))
+        .then(() => expect(cb).toHaveBeenCalled())
+        .then(done);
+    });
+
+    it('should invoke the callback with a synchronous result', done => {
+      let cb = jasmine.createSpy('cb');
+      let syncStore = new SyncStore(dispatcher);
+      syncStore.addListener(cb);
       registeredCallback(action({ foo: 'bar' }))
         .then(() => expect(cb).toHaveBeenCalled())
         .then(done);
@@ -103,8 +113,17 @@ class TestStore extends FluxStore<TestObj> {
   }
 
   reduce(state: TestObj, action: Action<TestObj>): Promise<void> {
-    state = action.payload;
-    return Promise.resolve(state);
+    return Promise.resolve(action.payload);
+  }
+}
+
+class SyncStore extends FluxStore<number> {
+  getInitialState(): number {
+    return 42;
+  }
+
+  reduce(state: number, action: Action<number>): number {
+    return action.payload;
   }
 }
 
