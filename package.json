@@ -6,7 +6,7 @@
   "jsnext:main": "index.js",
   "typings": "index.d.ts",
   "scripts": {
-    "start": "nodemon -e ts --exec npm test",
+    "start": "nodemon --ignore '*.d.ts' -e ts --exec npm test",
     "pretest": "tsc",
     "test": "jasmine",
     "prepublish": "npm run pretest && node bundle.js"
