@@ -31,8 +31,7 @@ let builder = new Builder({
 
 builder
   .buildStatic('index.js', 'dist/flux-lite.umd.js', {
-    globalName: 'FluxLite',
-    runtime: false
+    globalName: 'FluxLite'
   })
   .then(() => console.log('Build complete'))
   .catch(err => console.error(err));
@@ -40,8 +39,7 @@ builder
 builder
   .buildStatic('index.js', 'dist/flux-lite.umd.min.js', {
     globalName: 'FluxLite',
-    minify: true,
-    runtime: false
+    minify: true
   })
   .then(() => console.log('Minified build complete'))
   .catch(err => console.error(err));
