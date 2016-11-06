@@ -86,8 +86,8 @@ describe('FluxStore', () => {
 
     it('should throw if reduce returns undefined', done => {
       registeredCallback(action(undefined))
-        .then(done.fail)
-        .catch(err => expect(err).toEqual(jasmine.any(StoreError)))
+        .then(() => done.fail())
+        .catch((err: Error) => expect(err).toEqual(jasmine.any(StoreError)))
         .then(done);
     });
   });

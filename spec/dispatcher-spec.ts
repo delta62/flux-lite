@@ -47,7 +47,7 @@ describe('Dispatcher', () => {
       let token = 'abc';
       dispatcher.register(waitFor(() => token, dispatcher));
       dispatcher.dispatch(42)
-        .then(done.fail)
+        .then(() => done.fail())
         .catch(err => expect(err).toEqual(jasmine.any(DispatcherError)))
         .then(done);
     });
@@ -124,7 +124,7 @@ describe('Dispatcher', () => {
     it('should reject when a store rejects its promise', done => {
       dispatcher.register(rejectAfter(1));
       dispatcher.dispatch(42)
-        .then(done.fail)
+        .then(() => done.fail())
         .catch(err => expect(err).toEqual(jasmine.any(Error)))
         .then(done);
     });
@@ -132,7 +132,7 @@ describe('Dispatcher', () => {
     it('should reject when a store throws', done => {
       dispatcher.register(failingStoreCallback);
       dispatcher.dispatch(42)
-        .then(done.fail)
+        .then(() => done.fail())
         .catch(err => expect(err).toEqual(jasmine.any(Error)))
         .then(done);
     });
