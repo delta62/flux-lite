@@ -107,23 +107,23 @@ describe('FluxStore', () => {
   });
 });
 
-class TestStore extends FluxStore<TestObj> {
+class TestStore extends FluxStore<TestObj, TestObj> {
   getInitialState(): TestObj {
     return { foo: 'initial' };
   }
 
-  reduce(state: TestObj, action: Action<TestObj>): Promise<void> {
-    return Promise.resolve(action.payload);
+  reduce(state: TestObj, payload: TestObj): TestObj {
+    return payload;
   }
 }
 
-class SyncStore extends FluxStore<number> {
+class SyncStore extends FluxStore<number, number> {
   getInitialState(): number {
     return 42;
   }
 
-  reduce(state: number, action: Action<number>): number {
-    return action.payload;
+  reduce(state: number, payload: number): number {
+    return payload;
   }
 }
 

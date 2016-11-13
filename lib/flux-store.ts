@@ -5,14 +5,14 @@ import { StoreError } from './store-error';
 
 export type ListenerMeta = { remove: () => void };
 
-export abstract class FluxStore<TState> {
+export abstract class FluxStore<TState, TPayload> {
   private static CHANGE_EVENT: string = 'change';
   private _state: TState;
   private _dispatchToken: DispatchToken;
   private _initialized: boolean;
   protected _emitter: EventEmitter;
 
-  constructor(private _dispatcher: Dispatcher<any>) {
+  constructor(private _dispatcher: Dispatcher<TPayload>) {
     this._initialized = false;
     this._emitter = new EventEmitter();
     this._dispatchToken = this._dispatcher.register(payload => {
@@ -22,7 +22,7 @@ export abstract class FluxStore<TState> {
 
   protected abstract getInitialState(): TState;
 
-  protected abstract reduce(state: TState, action: Action<any>): Promise<TState> | TState;
+  protected abstract reduce(state: TState, payload: TPayload, action: Action<TPayload>): Promise<TState> | TState;
 
   get state(): TState {
     if (!this._initialized) {
@@ -51,8 +51,8 @@ export abstract class FluxStore<TState> {
     return x === y;
   }
 
-  private _invokeOnDispatch(payload: any): Promise<void> {
-    let result = this.reduce(this.state, payload);
+  private _invokeOnDispatch(action: Action<TPayload>): Promise<void> {
+    let result = this.reduce(this.state, action.payload, action);
     let promise = result instanceof Promise
       ? result
       : Promise.resolve(result);
