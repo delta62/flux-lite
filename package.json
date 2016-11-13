@@ -1,6 +1,6 @@
 {
   "name": "flux-lite",
-  "version": "2.2.1",
+  "version": "3.0.0",
   "description": "A simplistic implementation of the flux pattern",
   "main": "dist/flux-lite.umd.js",
   "jsnext:main": "index.js",
